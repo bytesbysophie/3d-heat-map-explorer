@@ -1,0 +1,71 @@
+
+/* IMPORTS */
+/*****************************************************************************************/
+
+@import url(https://fonts.googleapis.com/css2?family=Comfortaa:wght@300);
+
+/* VARIABLES */
+/*****************************************************************************************/
+
+:root {
+  --font-family: 'Comfortaa', cursive;
+  --color: #EBEBEE;
+  --background-color-inner: #3c3f4b; /* #494d5c;*/
+  --background-color-outer:  #000001; /*#252830*/
+}
+
+/* GLOBAL */
+/*****************************************************************************************/
+
+html,body{
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  
+  /* Layout */
+  /* height: 100%; */
+  margin: 0;
+
+  /*Background*/
+  background-color: var(--background-color);
+  background: radial-gradient(circle,  var(--background-color-inner) 0%, var(--background-color-outer) 100%); 
+
+
+  /*Font*/
+  color: var(--color);
+  font-family: var(--font-family);
+
+  /* overflow: hidden; */
+
+}
+
+/* INTERACTION ELEMENTS */
+/*****************************************************************************************/
+
+.icon-active {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.icon-inactive {
+  opacity: 0.5;
+}
+
+#play-pause-icons {
+  margin-top: 20px;
+}
+
+/* CONTENT ELEMENTS */
+/*****************************************************************************************/
+
+#header {
+	position: absolute;
+  font-size: large;
+	top: 30px;
+	width: 100%;
+	text-align: center;
+	z-index: 100;
+	display:block;
+}
