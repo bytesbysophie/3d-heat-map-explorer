@@ -1,18 +1,24 @@
+
 var font = null;
 var isPlay = false;
+var is3D = true;
 
-// Load font upfront and only once so that the texts added don't appear with a delay
+/**
+ * Loads font and calls init() on load
+ */ 
 function loadFont(){
+    
     var loader = new THREE.FontLoader();
-    // loader.load('./font/Comfortaa_Regular.json', function(loadedFont) {
-    loader.load('https://raw.githubusercontent.com/components-ai/typefaces/main/packages/font-comfortaa/data/typefaces/normal-300.json', function(loadedFont) {
-            font = loadedFont;
-        
-        console.log(JSON.parse(JSON.stringify(font)))
+    loader.load('./font/Comfortaa_Regular.json', function(loadedFont) {
+    // loader.load('https://raw.githubusercontent.com/components-ai/typefaces/main/packages/font-comfortaa/data/typefaces/normal-300.json', function(loadedFont) {
+        font = loadedFont;
         init();
     })
 }
 
+/**
+ * Inits the interactive heat map explorer with all objects & behaviour
+ */
 function init(){ 
     const barMargin = 0.1;
     const barHeightMax = 10;
@@ -22,46 +28,62 @@ function init(){
     const outerHeight = barHeightMax + platformHeight;
     const legendSteps = 10;
     const fontHeight = 0.1;
-    const titleText = "3D Heat Map";
+    const titleText = "Heat Map";
 
-    const scene = new THREE.Scene();
 
-    // Create the cammera 
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, near = 0.1, far = 1000 );
+    // ADD EVENTLISTENER FOR INTERACTION ELEMENTS
+    //======================================================================================================//
     
-    // Adjust camera position to make the object visable
-    camera.position.set(15, 15, 15);
-
-    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: 1});
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    document.body.appendChild(renderer.domElement)
-
     // Add Eventlisterner for Play Pause Buttons
     const pauseIcon = document.getElementById("pause-icon")
     pauseIcon.addEventListener("click", () => {
         isPlay = false;
-        setPlayPauseIconOpacity()
+        setIconOpacity()
     } )
-
     const playIcon = document.getElementById("play-icon")
     playIcon.addEventListener("click", () => {
         isPlay = true;
-        setPlayPauseIconOpacity()
+        setIconOpacity()
+    } )
+       
+    // Add Eventlisterner for 2D/ 3D Buttons
+    const icon2D = document.getElementById("2d-icon")
+    icon2D.addEventListener("click", () => {
+        is3D = false;
+        setIconOpacity()
+    } )
+    const icon3D = document.getElementById("3d-icon")
+    icon3D.addEventListener("click", () => {
+        is3D = true;
+        setIconOpacity()
     } )
 
-    const setPlayPauseIconOpacity = () => {
+    // Update the style of the icons based on the corresponding state
+    const setIconOpacity = () => {
         playIcon.classList.add(isPlay ? "icon-inactive" : "icon-active");
         playIcon.classList.remove(isPlay ? "icon-active" : "icon-inactive");
         pauseIcon.classList.add(isPlay ? "icon-active" : "icon-inactive");
         pauseIcon.classList.remove(isPlay ? "icon-inactive" : "icon-active");
+        icon3D.classList.add(is3D ? "icon-inactive" : "icon-active");
+        icon3D.classList.remove(is3D ? "icon-active" : "icon-inactive");
+        icon2D.classList.add(is3D ? "icon-active" : "icon-inactive");
+        icon2D.classList.remove(is3D ? "icon-inactive" : "icon-active");
     }
 
-    setPlayPauseIconOpacity();
+    setIconOpacity();
+    
+    // CREATE THREE JS BASE OBJECTS
+    //======================================================================================================//
+   
+    const scene = new THREE.Scene();
 
-      // Add controls to move the camera
-    const controls = new THREE.OrbitControls( camera, renderer.domElement );
-    controls.target.set(0,0,0);
-    controls.update();
+    // Create the cammera 
+    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, near = 0.1, far = 1000 );
+
+
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: 1});
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    document.body.appendChild(renderer.domElement)
     
     // PREPARE DATA 
     //======================================================================================================//
@@ -332,15 +354,26 @@ function init(){
     const lightAmbient = new THREE.AmbientLight("white")
     scene.add( lightAmbient );
 
-    const axesHelper = new THREE.AxesHelper(1000);
-    scene.add( axesHelper );
-
-    // POSTION SCENE AT VERTICAL CENTER
+    // ADJUST CAMERA A & SCENE SETTINGS
     //======================================================================================================//
-    scene.position.y -= outerHeight/2
+    
+    // Adjust camera position to make the object visable
+    camera.position.set(-15, 15, 15);
 
-    // ANIMATE 
+    // Position scene in vertical center
+    scene.position.y -= outerHeight/2 
+    
+    // Add colored x-/ y-/ z-axis for orientation/ debugginng
+    // const axesHelper = new THREE.AxesHelper(1000);
+    // scene.add( axesHelper );
+
+    // ITERACTION 
     //======================================================================================================//
+
+    // Add controls to move the camera
+    const controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.target.set(0,0,0);
+    controls.update();
 
     const animate = () => {
      
