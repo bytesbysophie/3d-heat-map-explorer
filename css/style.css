@@ -41,6 +41,16 @@ body {
 
 }
 
+.row-center {
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+}
+
+.row-center div {
+  margin: 10px 60px 10px 60px;
+}
+
 /* INTERACTION ELEMENTS */
 /*****************************************************************************************/
 
