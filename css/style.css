@@ -23,9 +23,7 @@ html,body{
 }
 
 body {
-  
-  /* Layout */
-  /* height: 100%; */
+
   margin: 0;
 
   /*Background*/
@@ -37,8 +35,10 @@ body {
   color: var(--color);
   font-family: var(--font-family);
 
-  /* overflow: hidden; */
+}
 
+canvas {
+  cursor: move;
 }
 
 .row-center {

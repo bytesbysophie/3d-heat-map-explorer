@@ -2,6 +2,7 @@
 var font = null;
 var isPlay = false;
 var is3D = true;
+var inTransition = false;
 
 /**
  * Loads font and calls init() on load
@@ -49,13 +50,17 @@ function init(){
     // Add Eventlisterner for 2D/ 3D Buttons
     const icon2D = document.getElementById("2d-icon")
     icon2D.addEventListener("click", () => {
+        if(!is3D) return;
         is3D = false;
-        setIconOpacity()
+        inTransition = true;
+        setIconOpacity();
     } )
     const icon3D = document.getElementById("3d-icon")
     icon3D.addEventListener("click", () => {
+        if(is3D) return;
         is3D = true;
-        setIconOpacity()
+        inTransition = true;
+        setIconOpacity();
     } )
 
     // Update the style of the icons based on the corresponding state
@@ -89,25 +94,6 @@ function init(){
     //======================================================================================================//
    
     // Define Data
-    // const data = [
-    //     {cat1: 1, cat2: 1, value: 1}, 
-    //     {cat1: 1, cat2: 2, value: 0.4}, 
-    //     {cat1: 1, cat2: 3, value: 0.1}, 
-    //     {cat1: 1,  cat2: 4, value: 0.6}, 
-    //     {cat1: 2, cat2: 1, value: 0.8}, 
-    //     {cat1: 2, cat2: 2, value: 0.3}, 
-    //     {cat1: 2, cat2: 3, value: 0.2}, 
-    //     {cat1: 2,  cat2: 4, value: 0.5}, 
-    //     {cat1: 3, cat2: 1, value: 0.9}, 
-    //     {cat1: 3, cat2: 2, value: 0.5}, 
-    //     {cat1: 3, cat2: 3, value: 0.7}, 
-    //     {cat1: 3,  cat2: 4, value: 0.4}, 
-    //     {cat1: 4, cat2: 1, value: 0.6}, 
-    //     {cat1: 4, cat2: 2, value: 1}, 
-    //     {cat1: 4, cat2: 3, value: 0.4}, 
-    //     {cat1: 4,  cat2: 4, value: 0.3}
-    // ]
-
     const data = [
         {cat1: "A", cat2: "1", value: 15}, 
         {cat1: "A", cat2: "2", value: 4}, 
@@ -126,25 +112,6 @@ function init(){
         {cat1: "D", cat2: "3", value: 32}, 
         {cat1: "D",  cat2: "4", value: 52}
     ]
-
-    // const data = [
-    //     {cat1: "A", cat2: "1", value: 2}, 
-    //     {cat1: "A", cat2: "2", value: 4.3}, 
-    //     {cat1: "A", cat2: "3", value: 3}, 
-    //     {cat1: "A",  cat2: "4", value: 1.9}, 
-    //     {cat1: "B", cat2:  "1", value: 4}, 
-    //     {cat1: "B", cat2: "2", value: 4}, 
-    //     {cat1: "B", cat2: "3", value: 3}, 
-    //     {cat1: "B",  cat2: "4", value: 4}, 
-    //     {cat1: "C", cat2:  "1", value: 4}, 
-    //     {cat1: "C", cat2: "2", value: 3}, 
-    //     {cat1: "C", cat2: "3", value: 4}, 
-    //     {cat1: "C",  cat2: "4", value: 4}, 
-    //     {cat1: "D", cat2:  "1", value: 3}, 
-    //     {cat1: "D", cat2: "2", value: 4}, 
-    //     {cat1: "D", cat2: "3", value: 3}, 
-    //     {cat1: "D",  cat2: "4", value: 5.1}
-    // ]
 
     // DEFINE SCALES
     //======================================================================================================//
@@ -185,7 +152,7 @@ function init(){
     platform.scale.z = data.length/ 2 + platformMargin;
 
     // Position platform to start at y=0
-    platform.position.y += platformHeight/2;
+    platform.position.y -= platformHeight/2 + barMargin;
 
 
     // ADD BARS
@@ -207,7 +174,8 @@ function init(){
     const scaleBar = (bar, value) => {
         bar.scale.y = y(value);
         bar.scale.x = barWidth; 
-        bar.scale.z = barWidth;        
+        bar.scale.z = barWidth;
+        bar.maxScaleY = bar.scale.y;
 
         return bar;
     }
@@ -217,7 +185,8 @@ function init(){
     const positionBar = (bar, cat1, cat2, value) => {
         bar.position.x = x(cat1) + barWidth/2 - innerWidth/2
         bar.position.z = z(cat2) + barWidth/2 + innerWidth/2
-        bar.position.y += y(value) /2 + platformHeight + barMargin
+        bar.position.y += y(value) /2
+        bar.maxPositionY = bar.position.y;
 
         return bar;
     }
@@ -226,12 +195,12 @@ function init(){
     bars = []
     data.forEach((d, i) => { 
         bar = {
-            geometry: createBar(d.cat1, d.cat2, d.value),
+            mesh: createBar(d.cat1, d.cat2, d.value),
             d: d,
             i: i
         }
         bars.push(bar);
-        scene.add(bar.geometry);
+        scene.add(bar.mesh);
     })
 
     // ADD TICK LABELS
@@ -255,7 +224,6 @@ function init(){
                 break;
         }
 
-        label.position.y += platformHeight + barMargin
         label.rotateX(THREE.Math.degToRad(-90));
 
         scene.add(label)
@@ -288,7 +256,7 @@ function init(){
 
         bar.position.x = innerWidth/2 + platformMargin/2 + bar.scale.x;
         bar.position.z = innerWidth/2 - i * bar.scale.z;
-        bar.position.y += y(d) /2 + platformHeight + barMargin
+        bar.position.y += y(d) /2
 
         if( d === value_max || d === value_min) {
             let labelGeometry = new THREE.TextGeometry(String(d), {font: font, size: 0.5, height: fontHeight});
@@ -296,7 +264,6 @@ function init(){
            
             label.position.x = innerWidth/2 + platformMargin/2 + bar.scale.x/4;
             label.position.z = innerWidth/2 - i * bar.scale.z + barWidth/4;
-            label.position.y += platformHeight + barMargin;
 
             label.rotateX(THREE.Math.degToRad(-90));
             
@@ -316,7 +283,6 @@ function init(){
     
     title.rotateX(THREE.Math.degToRad(-90));
     title.position.z -= data.length / 4;
-    title.position.y += platformHeight + barMargin;
 
     scene.add(title)
 
@@ -360,12 +326,12 @@ function init(){
     // Adjust camera position to make the object visable
     camera.position.set(-15, 15, 15);
 
-    // Position scene in vertical center
-    scene.position.y -= outerHeight/2 
+    // Position scene vertically
+    scene.position.y -= platformHeight
     
     // Add colored x-/ y-/ z-axis for orientation/ debugginng
-    // const axesHelper = new THREE.AxesHelper(1000);
-    // scene.add( axesHelper );
+    const axesHelper = new THREE.AxesHelper(1000);
+    scene.add( axesHelper );
 
     // ITERACTION 
     //======================================================================================================//
@@ -383,14 +349,56 @@ function init(){
         // Set up endless repetition/ loop
         requestAnimationFrame(animate)
 
+        if(!is3D & inTransition) {
+            console.log("!is3D & inTransition")
+            bars.map(bar => {
+                bar.mesh.scale.y = Math.round(bar.mesh.scale.y * 10)/10;
+                bar.mesh.position.y = Math.round(bar.mesh.position.y * 10)/10;
+
+                if(bar.mesh.scale.y > barMargin) {
+                    bar.mesh.scale.y  -= 0.1;
+                } else if(bar.mesh.scale.y < barMargin) {
+                    bar.mesh.scale.y += 0.1;
+                }
+                if(bar.mesh.position.y > 0) {
+                    bar.mesh.position.y -= 0.1
+                }
+
+            })
+
+            // Identify if transition is finished
+            inTransition = d3.max(bars, function(bar) { return  (bar.mesh.scale.y)}) > barMargin;
+        }
+
+        if(is3D & inTransition) {
+            console.log("is3D & inTransition")
+            bars.map(bar => {
+                if(bar.mesh.scale.y < bar.mesh.maxScaleY) {
+                    bar.mesh.scale.y += 0.1;
+                } else if(bar.mesh.scale.y > bar.mesh.maxScaleY) {
+                    bar.mesh.scale.y = bar.mesh.maxScaleY;
+                }
+                if(bar.mesh.position.y < bar.mesh.maxPositionY) {
+                    bar.mesh.position.y  += 0.1;
+                } else if(bar.mesh.position.y >  bar.mesh.maxPositionY) {
+                    bar.mesh.position.y = bar.mesh.maxPositionY;
+                }
+
+            })
+
+            // Identify if transition is finished
+            inTransition = d3.max(bars, function(bar) { return  (bar.mesh.maxScaleY)}) !== d3.max(bars, function(bar) { return  (bar.mesh.scale.y)});
+        }
+
         if (!isPlay) return;
       
         scene.rotation.y -= 0.01
+
     }
 
     // Call function to animate in a loop
     animate()
-   
+
 
     // REACT TO RESIZE 
     //======================================================================================================//
